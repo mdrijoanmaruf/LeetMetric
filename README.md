@@ -1,4 +1,3 @@
 # LeetMetric
 
-## Visit :
-[Click Hear](https://mdrijoanmaruf.github.io/LeetMetric/)
+[Click Hear to Visit](https://mdrijoanmaruf.github.io/LeetMetric/)
