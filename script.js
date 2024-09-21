@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+
     const searchButton = document.getElementById("search-btn");
     const usernameInput = document.getElementById("user-input");
     const statsContainer = document.querySelector(".stats-container");
@@ -11,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const hardLabel = document.getElementById("hard-label");
     const cardStatsContainer = document.querySelector(".stats-cards");
 
-    // Function to validate the username using regex
+    //return true or false based on a regex
     function validateUsername(username) {
         if(username.trim() === "") {
             alert("Username should not be empty");
@@ -25,77 +26,55 @@ document.addEventListener("DOMContentLoaded", function() {
         return isMatching;
     }
 
-    // Function to fetch user details using the new proxy server
     async function fetchUserDetails(username) {
-        try {
+
+        try{
             searchButton.textContent = "Searching...";
             searchButton.disabled = true;
+            //statsContainer.classList.add("hidden");
 
-            const proxyUrl = 'https://cors.bridged.cc/';  // New proxy server
+            // const response = await fetch(url);
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/' 
             const targetUrl = 'https://leetcode.com/graphql/';
             
             const myHeaders = new Headers();
             myHeaders.append("content-type", "application/json");
 
-            // GraphQL query to fetch user data from LeetCode
             const graphql = JSON.stringify({
-                query: `
-                    query userSessionProgress($username: String!) {
-                        allQuestionsCount {
-                            difficulty
-                            count
-                        }
-                        matchedUser(username: $username) {
-                            submitStats {
-                                acSubmissionNum {
-                                    difficulty
-                                    count
-                                    submissions
-                                }
-                                totalSubmissionNum {
-                                    difficulty
-                                    count
-                                    submissions
-                                }
-                            }
-                        }
-                    }
-                `,
+                query: "\n    query userSessionProgress($username: String!) {\n  allQuestionsCount {\n    difficulty\n    count\n  }\n  matchedUser(username: $username) {\n    submitStats {\n      acSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n      totalSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n    }\n  }\n}\n    ",
                 variables: { "username": `${username}` }
-            });
-
+            })
             const requestOptions = {
                 method: "POST",
                 headers: myHeaders,
                 body: graphql,
             };
 
-            // Fetch user data via the proxy server
-            const response = await fetch(proxyUrl + targetUrl, requestOptions);
-            if (!response.ok) {
+            const response = await fetch(proxyUrl+targetUrl, requestOptions);
+            if(!response.ok) {
                 throw new Error("Unable to fetch the User details");
             }
             const parsedData = await response.json();
-            console.log("Fetched data: ", parsedData);
+            console.log("Logging data: ", parsedData) ;
 
-            // Display the fetched data in the UI
             displayUserData(parsedData);
-        } catch (error) {
-            statsContainer.innerHTML = `<p>${error.message}</p>`;
-        } finally {
+        }
+        catch(error) {
+            statsContainer.innerHTML = `<p>${error.message}</p>`
+        }
+        finally {
             searchButton.textContent = "Search";
             searchButton.disabled = false;
         }
     }
 
-    // Function to update the progress circles
     function updateProgress(solved, total, label, circle) {
-        const progressDegree = (solved / total) * 100;
+        const progressDegree = (solved/total)*100;
         circle.style.setProperty("--progress-degree", `${progressDegree}%`);
         label.textContent = `${solved}/${total}`;
     }
 
-    // Function to display the fetched user data
+
     function displayUserData(parsedData) {
         const totalQues = parsedData.data.allQuestionsCount[0].count;
         const totalEasyQues = parsedData.data.allQuestionsCount[1].count;
@@ -112,29 +91,30 @@ document.addEventListener("DOMContentLoaded", function() {
         updateProgress(solvedTotalHardQues, totalHardQues, hardLabel, hardProgressCircle);
 
         const cardsData = [
-            { label: "Overall Submissions", value: parsedData.data.matchedUser.submitStats.totalSubmissionNum[0].submissions },
-            { label: "Overall Easy Submissions", value: parsedData.data.matchedUser.submitStats.totalSubmissionNum[1].submissions },
-            { label: "Overall Medium Submissions", value: parsedData.data.matchedUser.submitStats.totalSubmissionNum[2].submissions },
-            { label: "Overall Hard Submissions", value: parsedData.data.matchedUser.submitStats.totalSubmissionNum[3].submissions },
+            {label: "Overall Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[0].submissions },
+            {label: "Overall Easy Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[1].submissions },
+            {label: "Overall Medium Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[2].submissions },
+            {label: "Overall Hard Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[3].submissions },
         ];
 
-        console.log("Card data: ", cardsData);
+        console.log("card ka data: " , cardsData);
 
         cardStatsContainer.innerHTML = cardsData.map(
             data => 
-                `<div class="card">
+                    `<div class="card">
                     <h4>${data.label}</h4>
                     <p>${data.value}</p>
-                </div>`
-        ).join("");
+                    </div>`
+        ).join("")
+
     }
 
-    // Event listener for the search button
     searchButton.addEventListener('click', function() {
         const username = usernameInput.value;
-        console.log("Entered username: ", username);
-        if (validateUsername(username)) {
+        console.log("logggin username: ", username);
+        if(validateUsername(username)) {
             fetchUserDetails(username);
         }
-    });
-});
+    })
+
+})
